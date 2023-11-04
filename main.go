@@ -190,7 +190,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	// calculate new dimensions while maintaining aspect ratio
 	newWidth := config.ResizeWidth
 	newHeight := int(float64(newWidth) / aspectRatio)
-	if newHeight > config.ResizeHeight {
+	if newHeight < config.ResizeHeight {
 		newHeight = config.ResizeHeight
 		newWidth = int(float64(newHeight) * aspectRatio)
 	}
