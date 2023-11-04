@@ -218,7 +218,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	// if GenerateThumbnails is true, generate a thumbnail
 	if config.GenerateThumbnails {
-		thumbnail := transform.Resize(cropped, 32, 32, transform.Linear)
+		thumbnail := transform.Resize(cropped, 64, 64, transform.Linear)
 		err = imgio.Save(fmt.Sprintf("%s/%s_thumbnail.%s", config.ImageDirectory, filename, config.ImageFormat), thumbnail, imgio.PNGEncoder())
 		if err != nil {
 			http.Error(w, "Could not write thumbnail file", http.StatusInternalServerError)
