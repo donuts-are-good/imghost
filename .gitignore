@@ -2,4 +2,6 @@
 .Trash-1000
 imghost
 BUILDS
-imghost.log
+*.log
+config.json
+*.old
