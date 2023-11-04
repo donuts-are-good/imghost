@@ -100,14 +100,14 @@ func main() {
 	// create a logger that writes to the log file and the standard output
 	logger = log.New(io.MultiWriter(logFile, os.Stdout), "", log.LstdFlags)
 
-	// Create a new serve mux
+	// create a new serve mux
 	mux := http.NewServeMux()
 
-	// Serve static files from the ImageDirectory
+	// serve static files from the ImageDirectory
 	fs := http.FileServer(http.Dir(config.ImageDirectory))
 	mux.Handle("/img/", logHandler(http.StripPrefix("/img/", fs)))
 
-	// Handle both /upload and /upload/ routes
+	// handle both /upload and /upload/ routes
 	mux.Handle(config.UploadRoute, corsHandler(http.HandlerFunc(uploadHandler)))
 	if !strings.HasSuffix(config.UploadRoute, "/") {
 		mux.Handle(config.UploadRoute+"/", corsHandler(http.HandlerFunc(uploadHandler)))
@@ -115,6 +115,7 @@ func main() {
 
 	http.ListenAndServe(":"+config.Port, mux)
 }
+
 func logHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		logger.Printf("Request received: %s %s", r.Method, r.URL.Path)
@@ -183,11 +184,27 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("Datetime: %s, Original filename: %s, Original dimensions: %dx%d",
 		time.Now().Format(time.RFC3339), header.Filename, img.Bounds().Dx(), img.Bounds().Dy())
 
-	// resize image
-	resized := transform.Resize(img, config.ResizeWidth, config.ResizeHeight, transform.Linear)
+	// calculate aspect ratio
+	aspectRatio := float64(img.Bounds().Dx()) / float64(img.Bounds().Dy())
+
+	// calculate new dimensions while maintaining aspect ratio
+	newWidth := config.ResizeWidth
+	newHeight := int(float64(newWidth) / aspectRatio)
+	if newHeight > config.ResizeHeight {
+		newHeight = config.ResizeHeight
+		newWidth = int(float64(newHeight) * aspectRatio)
+	}
+
+	// resize image while maintaining aspect ratio
+	resized := transform.Resize(img, newWidth, newHeight, transform.Linear)
+
+	// calculate crop rectangle
+	cropX := (resized.Bounds().Dx() - config.CropWidth) / 2
+	cropY := (resized.Bounds().Dy() - config.CropHeight) / 2
+	cropRect := image.Rect(cropX, cropY, cropX+config.CropWidth, cropY+config.CropHeight)
 
 	// crop image
-	cropped := transform.Crop(resized, image.Rect(0, 0, config.CropWidth, config.CropHeight))
+	cropped := transform.Crop(resized, cropRect)
 
 	// generate a UUID for the filename
 	filename := uuid.New().String()
