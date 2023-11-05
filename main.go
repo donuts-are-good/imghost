@@ -33,37 +33,35 @@ type Config struct {
 	CheckIP            bool     `json:"checkIP"`
 }
 
-var config Config
+var config = Config{
+	SecretKey:          "your-secret-key",
+	ImageDirectory:     "path/to/your/images/directory",
+	ImageUrl:           "http://your-domain.com/path/to/your/images/directory",
+	Port:               "39716",
+	ResizeWidth:        512,
+	ResizeHeight:       512,
+	CropWidth:          512,
+	CropHeight:         512,
+	ImageFormat:        "png",
+	UploadRoute:        "/upload",
+	AllowedIPs:         []string{"159.203.109.32", "203.0.1.0"},
+	LogFilePath:        "imghost.log",
+	GenerateThumbnails: true,
+	CheckIP:            true,
+}
 var logger *log.Logger
 
 func main() {
-
 	// check if the config file exists
 	if _, err := os.Stat("config.json"); os.IsNotExist(err) {
 		// if it doesn't exist, create it with demo values
-		config = Config{
-			SecretKey:          "your-secret-key",
-			ImageDirectory:     "path/to/your/images/directory",
-			ImageUrl:           "http://your-domain.com/path/to/your/images/directory",
-			Port:               "39716",
-			ResizeWidth:        512,
-			ResizeHeight:       512,
-			CropWidth:          512,
-			CropHeight:         512,
-			ImageFormat:        "png",
-			UploadRoute:        "/upload",
-			AllowedIPs:         []string{"159.203.109.32", "203.0.1.0"},
-			LogFilePath:        "imghost.log",
-			GenerateThumbnails: true,
-			CheckIP:            true,
-		}
 		file, err := os.Create("config.json")
 		if err != nil {
 			panic(err)
 		}
 		defer file.Close()
 		encoder := json.NewEncoder(file)
-		encoder.SetIndent("", "  ")
+		encoder.SetIndent("", "\t")
 		err = encoder.Encode(config)
 
 		if err != nil {
