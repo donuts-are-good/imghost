@@ -6,6 +6,7 @@ import (
 	"image"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strings"
@@ -147,8 +148,8 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 
 	if config.CheckIP {
 		// check the client's IP
-		ip := strings.Split(r.RemoteAddr, ":")[0]
 		isAllowed := false
+		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 		for _, allowedIP := range config.AllowedIPs {
 			if ip == allowedIP {
 				isAllowed = true
