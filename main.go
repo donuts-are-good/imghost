@@ -185,8 +185,12 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// log the original image details
-	logger.Printf("Datetime: %s, Original filename: %s, Original dimensions: %dx%d",
-		time.Now().Format(time.RFC3339), header.Filename, img.Bounds().Dx(), img.Bounds().Dy())
+	logger.Printf(
+		"Datetime: %s, Original filename: %s, Original dimensions: %dx%d",
+		time.Now().Format(time.RFC3339),
+		header.Filename,
+		img.Bounds().Dx(), img.Bounds().Dy(),
+	)
 
 	// calculate aspect ratio
 	aspectRatio := float64(img.Bounds().Dx()) / float64(img.Bounds().Dy())
@@ -211,7 +215,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	cropped := transform.Crop(resized, cropRect)
 
 	// generate a UUID for the filename
-	filename := uuid.New().String()
+	filename := uuid.New()
 
 	// write image to file
 	err = imgio.Save(fmt.Sprintf("%s/%s.%s", config.ImageDirectory, filename, config.ImageFormat), cropped, imgio.PNGEncoder())
@@ -235,5 +239,5 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		time.Now().Format(time.RFC3339), filename, config.ImageFormat, cropped.Bounds().Dx(), cropped.Bounds().Dy())
 
 	// return the image URL
-	w.Write([]byte(fmt.Sprintf("%s/%s.%s", config.ImageUrl, filename, config.ImageFormat)))
+	fmt.Fprintf(w, "%s/%s.%s", config.ImageUrl, filename, config.ImageFormat)
 }
