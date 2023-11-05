@@ -30,6 +30,7 @@ type Config struct {
 	AllowedIPs         []string `json:"allowedIPs"`
 	LogFilePath        string   `json:"logFilePath"`
 	GenerateThumbnails bool     `json:"generateThumbnails"`
+	CheckIP            bool     `json:"checkIP"`
 }
 
 var config Config
@@ -54,6 +55,7 @@ func main() {
 			AllowedIPs:         []string{"159.203.109.32", "203.0.1.0"},
 			LogFilePath:        "imghost.log",
 			GenerateThumbnails: true,
+			CheckIP:            true,
 		}
 		file, err := os.Create("config.json")
 		if err != nil {
@@ -145,19 +147,21 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check the client's IP
-	ip := strings.Split(r.RemoteAddr, ":")[0]
-	isAllowed := false
-	for _, allowedIP := range config.AllowedIPs {
-		if ip == allowedIP {
-			isAllowed = true
-			break
+	if config.CheckIP {
+		// check the client's IP
+		ip := strings.Split(r.RemoteAddr, ":")[0]
+		isAllowed := false
+		for _, allowedIP := range config.AllowedIPs {
+			if ip == allowedIP {
+				isAllowed = true
+				break
+			}
 		}
-	}
-	if !isAllowed {
-		logger.Println("Rejected IP: ", ip)
-		http.Error(w, "Not allowed", http.StatusForbidden)
-		return
+		if !isAllowed {
+			logger.Println("Rejected IP: ", ip)
+			http.Error(w, "Not allowed", http.StatusForbidden)
+			return
+		}
 	}
 
 	// check the secret key
