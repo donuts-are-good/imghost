@@ -155,7 +155,7 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if !isAllowed {
-		logger.Printf("Rejected IP: %s", ip)
+		logger.Println("Rejected IP: ", ip)
 		http.Error(w, "Not allowed", http.StatusForbidden)
 		return
 	}
