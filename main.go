@@ -178,9 +178,15 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	defer file.Close()
 
 	// read the image file
-	img, _, err := image.Decode(file)
+	img, format, err := image.Decode(file)
 	if err != nil {
 		http.Error(w, "Could not read image file", http.StatusInternalServerError)
+		return
+	}
+
+	// if the image is a GIF, return an error
+	if format == "gif" {
+		http.Error(w, "GIF animations are not supported", http.StatusBadRequest)
 		return
 	}
 

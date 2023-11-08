@@ -5,3 +5,4 @@ BUILDS
 *.log
 config.json
 *.old
+*.patch
